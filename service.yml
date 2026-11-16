@@ -1,0 +1,78 @@
+service:
+  name: aac-jdownloader
+  image_repo: jlesage/jdownloader-2
+  image_tag: v26.09.1
+  description: Download-Manager mit Web-Interface
+  icon: jdownloader.png
+  category: Admin - Tools
+  stage: prod
+  hostname: jdownloader
+ports:
+- name: web
+  port: 5800
+  external_port: 5800
+  protocol: TCP
+config:
+  domain_name: example.com
+  generate_hostname: false
+  integrations:
+    homepage:
+      enabled: true
+    autodns:
+      enabled: true
+    traefik:
+      enabled: true
+      cert_resolver: ionos
+      entrypoint: websecure
+  schema_version: 2
+stage_overrides:
+  prod:
+    config:
+      generate_hostname: false
+    service:
+      hostname: jdownloader
+volumes:
+  config:
+    description: JDownloader configuration and data
+deployment_strategy:
+  main:
+    enabled: true
+    target_stage: prod
+  dev:
+    enabled: true
+    target_stage: dev
+  test:
+    enabled: false
+    target_stage: test
+  ansible-dev:
+    enabled: true
+    target_stage: dev
+  iac-dev:
+    enabled: true
+    target_stage: dev
+  template-dev:
+    enabled: true
+    target_stage: dev
+deployments:
+  docker_compose:
+    restart_policy: always
+    host_base_path: /export/docker
+    volumes:
+    - config:/config
+    user: '0'
+    working_dir: /opt/JDownloader
+    environment:
+      TZ: '{{ vars.TZ }}'
+      UMASK: '{{ vars.UMASK }}'
+      DARK_MODE: '{{ vars.DARK_MODE }}'
+      PGID: '{{ vars.PGID }}'
+      PUID: '{{ vars.PUID }}'
+      USER_ID: '{{ vars.USER_ID }}'
+vars:
+  TZ: Europe/Berlin
+  UMASK: '000'
+  DARK_MODE: '1'
+  PGID: '1000'
+  PUID: '1000'
+  USER_ID: '0'
+secrets: {}

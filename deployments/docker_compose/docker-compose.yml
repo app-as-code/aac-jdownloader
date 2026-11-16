@@ -1,0 +1,68 @@
+services:
+  # --- Main Application Service ---
+  aac-jdownloader:
+    image: "jlesage/jdownloader-2:v26.09.1"
+    container_name: "aac-jdownloader"
+    hostname: "jdownloader"
+    restart: "always"
+
+
+    environment:
+      TZ: "Europe/Berlin"
+      UMASK: "000"
+      DARK_MODE: "1"
+      PGID: "1000"
+      PUID: "1000"
+      USER_ID: "0"
+
+    ports:
+      - "5800:5800/tcp"
+
+    volumes:
+      - "/export/docker/aac-jdownloader/config:/config"
+
+    networks:
+      - exposed
+      - interconnect
+      - secured
+      - stack_internal
+
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.aac-jdownloader.rule: "Host(`jdownloader.example.com`)"
+      traefik.http.routers.aac-jdownloader.entrypoints: "websecure"
+      traefik.http.routers.aac-jdownloader.tls: "true"
+      traefik.http.routers.aac-jdownloader.tls.certresolver: "ionos"
+      traefik.docker.network: "services-secured"
+      traefik.http.services.aac-jdownloader.loadbalancer.server.port: "5800"
+      traefik.http.services.aac-jdownloader.loadbalancer.server.scheme: "http"
+      auto-dns.createWildcard.aac-jdownloader: "false"
+      auto-dns.customDNS.aac-jdownloader: "true"
+      auto-dns.customDOMAIN.aac-jdownloader: "example.com"
+      auto-dns.customHost.aac-jdownloader: "jdownloader"
+      homepage.group: "Admin - Tools"
+      homepage.name: "Jdownloader"
+      homepage.href: "https://jdownloader.example.com"
+      homepage.icon: "jdownloader.png"
+      homepage.description: "Download-Manager mit Web-Interface"
+
+
+    user: '0'
+    working_dir: /opt/JDownloader
+
+
+
+networks:
+  secured:
+    name: "services-secured"
+    external: true
+  exposed:
+    name: "services-exposed"
+    external: true
+  interconnect:
+    name: "docker-default"
+    external: true
+  stack_internal:
+    name: "aac-jdownloader_stack_internal"
+    driver: "bridge"
+
